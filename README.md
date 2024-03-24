@@ -5,7 +5,8 @@ Video Demo
 https://www.youtube.com/watch?v=dgBiSpO3mI8
 
 Architecture
-![Untitled Diagram drawio (1)](https://github.com/andrepiper/fake-banking-cqrs-mediatr-stripe-tokenization/assets/3706993/c9dab5d4-53ba-4d51-aa04-9b5ea57b936d)
+![fake-banking-cqrs-mediatr-stripe-tokenization](https://github.com/andrepiper/andrepiper-fake-banking-cqrs-mediatr-stripe-tokenization/assets/3706993/34e3353f-2268-4ff8-8b41-604aa55417dc)
+
 
 FE and BE (Swagger) screenshots
 
@@ -14,10 +15,10 @@ FE code referenced from here: https://codepen.io/ruphaa/pen/LYdYMJb
 
 Filter Transaction via UI (hacked together with Javascript, nothing fancy like React)
 
-![image](https://github.com/andrepiper/fake-banking-cqrs-mediatr-stripe-tokenization/assets/3706993/e5f1e056-acf9-4e0b-98b6-d409b07a4126)
+![image](https://github.com/andrepiper/andrepiper-fake-banking-cqrs-mediatr-stripe-tokenization/assets/3706993/bd1f0800-abfb-419f-bb1f-e22aa43930c0)
 
-![image](https://github.com/andrepiper/fake-banking-cqrs-mediatr-stripe-tokenization/assets/3706993/42a55dee-d7e8-485b-ab3d-80e34886ee9d)
+![image](https://github.com/andrepiper/andrepiper-fake-banking-cqrs-mediatr-stripe-tokenization/assets/3706993/a94b7e71-bc74-4e85-b493-2b1c7bad8705)
 
 API Demo with Swagger
 
-![image](https://github.com/andrepiper/fake-banking-cqrs-mediatr-stripe-tokenization/assets/3706993/3fcc974b-8abf-495f-93b9-255787961de5)
+![image](https://github.com/andrepiper/andrepiper-fake-banking-cqrs-mediatr-stripe-tokenization/assets/3706993/94eaefb7-48c5-4d63-80eb-79eb1bf28075)
