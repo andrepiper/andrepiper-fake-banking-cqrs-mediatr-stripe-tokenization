@@ -1,0 +1,119 @@
+﻿@{
+    Layout = "";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CQRS.Pattern.Frontend</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css" />
+<script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+<div class="product-container">
+    <div class="image">
+        <img src="https://cdn-icons-png.flaticon.com/512/711/711284.png" alt="CQRS Implementation" border="0" />
+    </div>
+    <div class="details">
+        <h1 class="cost">$199.99</h1>
+        <h3 class="title">CQRS Implementation</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="card-container">
+        <form action="#" id="payment-form" class="card-details field">
+            @Html.AntiForgeryToken()
+            <div class="details">
+                <h1 class="title">CQRS Implementation</h1>
+            </div>
+            <div class="">
+                <div id="card-errors" class="title" role="alert"></div>
+                <div id="token-id" class="title"></div>
+            </div>
+            <div id="email-element">
+                <label for="cna">Email</label>
+                <input id="email" type="email">
+            </div>
+            <div id="card-element">
+            </div>
+            <button class="purchase-button" type="submit" id="submit-btn" data-content="PURCHASE - $199.99">PURCHASE - $199.99</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        //init datatbl
+        let table = new DataTable('#response_tbl');
+        // strip public key and init stripe class
+        var stripe = Stripe('');
+        var paymentRoute = "https://localhost:44370/api/Payments/payment";
+        var paymentObj = {
+            "email": "",
+            "provider": "STRIPE",
+            "tokenizedCard": "",
+            "amount": 199.99,
+            "description": "CQRS Implementation - Product",
+            "currency": "USD",
+        };
+
+        // Mount the Stripe Element to the DOM
+        var elements = stripe.elements();
+        var cardElement = elements.create('card');
+        cardElement.mount('#card-element');
+
+        // Handle real-time validation errors
+        cardElement.on('change', function (event) {
+            var displayError = $('#card-errors');
+            if (event.error) {
+                displayError.text(event.error.message);
+            } else {
+                displayError.text('');
+            }
+        });
+
+        // Set up the submit button
+        var form = $('#payment-form');
+        var submitBtn = $('#submit-btn');
+
+        form.on('submit', function (event) {
+            event.preventDefault();
+            submitBtn.prop('disabled', true);
+            var emailAddress = $("#email").val();
+            // Tokenize the card
+            stripe.createToken(cardElement).then(function (result) {
+                if (result.error) {
+                    console.error(result.error);
+                    submitBtn.prop('disabled', false);
+                } else {
+                    // update paymentObj
+                    paymentObj.email = emailAddress;
+                    paymentObj.tokenizedCard = result.token.id;
+                    // POST to payment endpoint
+                    $.ajax({
+                        type: 'POST',
+                        url: paymentRoute,
+                        data: JSON.stringify(paymentObj),
+                        contentType: 'application/json',
+                        success: function (response) {
+                            // handle success response
+                            if (response !== null) {
+                                //redirect to transactions
+                                var transactions = "https://localhost:7250/home/transactions";
+                                $(location).prop('href', transactions)
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error(xhr.responseText);
+                            submitBtn.prop('disabled', false);
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>

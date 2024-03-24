@@ -1,0 +1,178 @@
+﻿@{
+    Layout = "";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CQRS.Pattern.Frontend</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.css" />
+<script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+
+<div class="card-container-custom" style="width: fit-content;height:fit-content;margin-left: 0rem;margin-top: -313px;">
+    <form action="#" id="payment-form" class="card-details field">
+        @Html.AntiForgeryToken()
+        <div class="details">
+            <h1 class="title">Admin View</h1>
+            <div id="email-element">
+                <label for="cna">Search by Email</label>
+                <input id="email" type="email" value="fake.user@gmail.com">
+            </div>
+        </div>
+        <button class="purchase-button" type="submit" id="submit-btn" data-content="Search">Search</button>
+    </form>
+</div>
+<div class="row" style="width:max-content">
+    <div class="card-container-custom" style="width: auto;height:fit-content;margin-left: 0rem;">
+        <h1 class="title">Accounts</h1>
+        <table id="response_tbl" class="table datatable"
+                data-id-field="accountId"
+                data-sort-name="accountType"
+                data-sort-order="desc"
+                data-pagination="false"
+                data-show-pagination-switch="false">
+            <thead>
+                <tr>
+                    <th data-field="accountId" data-sortable="true">Account Id</th>
+                    <th data-field="accountType" data-sortable="true">Account Type</th>
+                    <th data-field="currency" data-sortable="true">Currency</th>
+                    <th data-field="balance" data-sortable="true">Balance</th>
+                    <th data-field="date" data-sortable="true">Date</th>
+                    <th data-field="default" data-sortable="true">Default Acc.</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-container-custom" style="width: auto;height:fit-content;margin-left: 0rem;">
+        <h1 class="title">Transactions</h1>
+        <table id="transactions_tbl" class="table datatable"
+                data-id-field="Id"
+                data-sort-name="AccountId"
+                data-sort-order="desc"
+                data-pagination="false"
+                data-show-pagination-switch="false">
+            <thead>
+                <tr>
+                    <th data-field="Id" data-sortable="true">Id</th>
+                    <th data-field="AccountId" data-sortable="true">AccountId</th>
+                    <th data-field="Amount" data-sortable="true">Amount</th>
+                    <th data-field="Currency" data-sortable="true">Currency</th>
+                    <th data-field="DebitCredit" data-sortable="true">DebitCredit</th>
+                    <th data-field="Description" data-sortable="true">Description</th>
+                    <th data-field="Date" data-sortable="true">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        //init datatbl
+        let table = new DataTable('#response_tbl');
+        let transactionTable = new DataTable('#transactions_tbl');
+        //populate tran tbls
+        function populateTableByAccountId(accountId) {
+            //Filter transactions by account ID
+            $.ajax({
+                type: 'GET',
+                url: transactionsRoute + accountId,
+                contentType: 'application/json',
+                success: function (transactionResponse) {
+                    if (transactionResponse !== null) {
+                        transactionResponse.transactions.forEach(function (transaction) {
+                            // Assuming 'table' is the reference to your DataTable
+                            transactionTable.row.add([
+                                transaction.id,
+                                "000" + transaction.accountId,
+                                transaction.amount,
+                                transaction.currency,
+                                transaction.isDebit ? 'Debit' : 'Credit',
+                                transaction.description,
+                                convertToShortDate(transaction.date)
+                            ]).draw().node();
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                    submitBtn.prop('disabled', false);
+                }
+            });
+        }
+        //convert dtm time 
+        function convertToShortDate(datetimeString) {
+            // Parse the datetime string into a Date object
+            var datetime = new Date(datetimeString);
+
+            // Get the components of the date
+            var year = datetime.getFullYear();
+            var month = datetime.getMonth() + 1; // Month is zero-based, so we add 1
+            var day = datetime.getDate();
+
+            // Create the short date string in the desired format (e.g., "YYYY-MM-DD")
+            var shortDateString = year + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day;
+
+            return shortDateString;
+        }
+        /*
+            customer accounts by email
+            https://localhost:44370/api/Account/balance/customer/:email
+        */
+        var customerBalanceRoute = "https://localhost:44370/api/Account/balance/customer/";
+        /*
+            Account transactions by Id
+            https://localhost:44370/transactions/:id
+        */
+        var transactionsRoute = "https://localhost:44370/transactions/";
+
+        // Set up the submit button
+        var form = $('#payment-form');
+        var submitBtn = $('#submit-btn');
+
+        form.on('submit', function (event) {
+            event.preventDefault();
+            submitBtn.prop('disabled', true);
+            var emailAddress = $("#email").val();
+            // Filter accounts by email
+            $.ajax({
+                type: 'GET',
+                url: customerBalanceRoute + emailAddress,
+                contentType: 'application/json',
+                success: function (response) {
+                    // handle success response
+                    if (response !== null) 
+                    {
+                        // Loop through each object in the data array
+                        response.forEach(function (item) {
+                            // Assuming 'table' is the reference to your DataTable
+                            table.row.add([
+                                "000" + item.accountId,
+                                item.accountType,
+                                item.currency,
+                                item.balance.toFixed(2), // Assuming you want to display balance with 2 decimal places
+                                convertToShortDate(item.dated),
+                                item.isDefault ? 'Yes' : 'No'
+                            ]).draw().node();
+                            //populate transaction tbl
+                            populateTableByAccountId(item.accountId);
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                    submitBtn.prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>

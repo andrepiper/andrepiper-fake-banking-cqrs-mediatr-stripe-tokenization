@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CQRS.Pattern.Common\CQRS.Pattern.Common.csproj" />
+    <ProjectReference Include="..\CQRS.Pattern.Infastructure\CQRS.Pattern.Infastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="PaymentApplication\Queries\" />
+  </ItemGroup>
+
+</Project>
